@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Publicaciones en Lotes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Importar fuentes de Google Fonts (gratuitas y de uso libre) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;700&family=Inter:wght@400;700&family=Lato:wght@400;700&family=Merriweather:wght@400;700&family=Montserrat:wght@400;700&family=Nunito:wght@400;700&family=Oswald:wght@400;700&family=Pacifico&family=Playfair+Display:wght@400;700&family=Poppins:wght@400;700&family=Raleway:wght@400;700&family=Roboto:wght@400;700&family=Rubik:wght@400;700&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        body {
+            background-color: #f0f2f5;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        .tweet-container {
+            background-color: white;
+            border-radius: 1rem;
+            border: 1px solid #e5e7eb;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+        .tweet-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .tweet-profile-pic {
+            width: 48px;
+            height: 48px;
+            border-radius: 9999px;
+            object-fit: cover;
+            margin-right: 0.75rem;
+        }
+        .tweet-username {
+            font-weight: bold;
+            color: #1a202c;
+            margin-right: 0.25rem;
+        }
+        .tweet-handle {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+        .tweet-content {
+            color: #1a202c;
+            line-height: 1.5;
+            font-size: 1.25rem;
+            margin-top: 0.5rem;
+        }
+        .tweet-time {
+            color: #6b7280;
+            font-size: 0.875rem;
+            margin-left: auto;
+        }
+        .tweet-name-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .tweet-name-group .tweet-username {
+            line-height: 1;
+        }
+        .tweet-name-group .tweet-handle {
+            line-height: 1;
+        }
+
+        /* Estilos de las fuentes dinámicas */
+        .font-roboto { font-family: 'Roboto', sans-serif; }
+        .font-opensans { font-family: 'Open Sans', sans-serif; }
+        .font-lato { font-family: 'Lato', sans-serif; }
+        .font-montserrat { font-family: 'Montserrat', sans-serif; }
+        .font-poppins { font-family: 'Poppins', sans-serif; }
+        .font-inter { font-family: 'Inter', sans-serif; }
+        .font-raleway { font-family: 'Raleway', sans-serif; }
+        .font-playfairdisplay { font-family: 'Playfair Display', serif; }
+        .font-merriweather { font-family: 'Merriweather', serif; }
+        .font-firasans { font-family: 'Fira Sans', sans-serif; }
+        .font-oswald { font-family: 'Oswald', sans-serif; }
+        .font-nunito { font-family: 'Nunito', sans-serif; }
+        .font-rubik { font-family: 'Rubik', sans-serif; }
+        .font-pacifico { font-family: 'Pacifico', cursive; }
+    </style>
+</head>
+<body class="p-8 bg-gray-100">
+
+    <div class="max-w-3xl mx-auto bg-white p-8 rounded-2xl shadow-lg">
+        <p class="text-center text-gray-600 mb-6">Completa los datos del usuario, sube una foto de perfil y pega el texto de tus publicaciones, uno por línea.</p>
+
+        <!-- Campo para la API Key -->
+        <div class="mb-6">
+            <label for="apiKeyInput" class="block text-sm font-medium text-gray-700 mb-1">Clave de API de Gemini</label>
+            <div class="relative">
+                <input type="password" id="apiKeyInput" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Introduce tu clave de API aquí">
+                <button id="toggleApiKeyBtn" class="absolute inset-y-0 right-0 px-3 py-1 bg-gray-200 text-gray-600 rounded-r-lg hover:bg-gray-300 transition-colors">Mostrar</button>
+            </div>
+        </div>
+
+        <!-- Campo para el tipo de contenido -->
+        <div class="mb-6">
+            <div class="flex justify-between items-center mb-2">
+                <label for="inputType" class="block text-sm font-medium text-gray-700">Tipo de contenido</label>
+                <div class="flex space-x-2">
+                    <button id="generateAIPostBtn" class="bg-blue-600 text-white font-semibold py-1 px-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center">
+                        <span class="mr-1">✨</span> Crear Post con IA
+                    </button>
+                </div>
+            </div>
+            <textarea id="inputType" rows="2" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ej: Citas motivacionales, humor de la vida diaria, datos curiosos, poesía..."></textarea>
+        </div>
+
+        <!-- Controles de entrada para el usuario y la foto -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div>
+                <label for="inputUsername" class="block text-sm font-medium text-gray-700 mb-1">Nombre de usuario</label>
+                <input type="text" id="inputUsername" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" value="usuario">
+            </div>
+            <div>
+                <label for="inputHandle" class="block text-sm font-medium text-gray-700 mb-1">Handle (@)</label>
+                <input type="text" id="inputHandle" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" value="@usuario">
+            </div>
+            <div>
+                <label for="inputProfilePic" class="block text-sm font-medium text-gray-700 mb-1">Subir foto de perfil</label>
+                <input type="file" id="inputProfilePic" accept="image/*" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+        </div>
+        
+        <div class="mb-6">
+            <label for="fontSelect" class="block text-sm font-medium text-gray-700 mb-1">Fuente</label>
+            <select id="fontSelect" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="roboto">Roboto</option>
+                <option value="opensans">Open Sans</option>
+                <option value="lato">Lato</option>
+                <option value="montserrat">Montserrat</option>
+                <option value="poppins">Poppins</option>
+                <option value="inter">Inter</option>
+                <option value="raleway">Raleway</option>
+                <option value="playfairdisplay">Playfair Display</option>
+                <option value="merriweather">Merriweather</option>
+                <option value="firasans">Fira Sans</option>
+                <option value="oswald">Oswald</option>
+                <option value="nunito">Nunito</option>
+                <option value="rubik">Rubik</option>
+                <option value="pacifico">Pacifico</option>
+            </select>
+        </div>
+
+        <div class="mb-6">
+            <div class="flex justify-between items-center mb-2">
+                <label for="postData" class="block text-sm font-medium text-gray-700">Textos de las publicaciones:</label>
+                <div class="flex space-x-2">
+                    <button id="clearAllBtn" class="bg-gray-200 text-gray-700 font-semibold py-1 px-3 rounded-lg hover:bg-gray-300 transition-colors">
+                        Limpiar Todo
+                    </button>
+                </div>
+            </div>
+            <textarea id="postData" rows="10" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ejemplo:
+¡Me encantan las personas que se emocionan con un atardecer!
+Mi segundo post, ¡listo para ser publicado en lotes!"></textarea>
+        </div>
+
+        <div class="flex flex-col md:flex-row gap-4 mb-6">
+            <button id="createPostsBtn" class="w-full md:w-1/2 bg-blue-600 text-white font-semibold py-3 px-6 rounded-xl hover:bg-blue-700 transition-colors">
+                Generar Posts de Imágenes
+            </button>
+        </div>
+
+        <div id="actionButtons" class="flex flex-col md:flex-row gap-4 mb-6 hidden">
+            <button id="downloadAllBtn" class="w-full md:w-1/2 bg-green-600 text-white font-semibold py-3 px-6 rounded-xl hover:bg-green-700 transition-colors">
+                Descargar Todos los Posts (.zip)
+            </button>
+        </div>
+    </div>
+
+    <div id="postsContainer" class="max-w-3xl mx-auto mt-8 space-y-6">
+        <!-- Las publicaciones generadas se añadirán aquí -->
+    </div>
+
+    <script>
+        const API_KEY_DEFAULT = "";
+        const profilePicInput = document.getElementById('inputProfilePic');
+        let profilePicDataUrl = 'https://placehold.co/100x100/A31D80/ffffff?text=E'; // Imagen por defecto
+
+        profilePicInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    profilePicDataUrl = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        const apiKeyInput = document.getElementById('apiKeyInput');
+        const toggleApiKeyBtn = document.getElementById('toggleApiKeyBtn');
+        toggleApiKeyBtn.addEventListener('click', () => {
+            const type = apiKeyInput.type === 'password' ? 'text' : 'password';
+            apiKeyInput.type = type;
+            toggleApiKeyBtn.textContent = type === 'password' ? 'Mostrar' : 'Ocultar';
+        });
+
+        document.getElementById('clearAllBtn').addEventListener('click', () => {
+            document.getElementById('postData').value = '';
+            document.getElementById('postsContainer').innerHTML = '';
+            document.getElementById('actionButtons').classList.add('hidden');
+        });
+
+        document.getElementById('createPostsBtn').addEventListener('click', () => {
+            const postDataText = document.getElementById('postData').value.trim();
+            const postsContainer = document.getElementById('postsContainer');
+            postsContainer.innerHTML = '';
+            document.getElementById('actionButtons').classList.add('hidden');
+
+            const username = document.getElementById('inputUsername').value.trim();
+            const handle = document.getElementById('inputHandle').value.trim();
+            const selectedFont = document.getElementById('fontSelect').value;
+
+            if (!postDataText || !username || !handle) {
+                alert('Por favor, rellena todos los campos.');
+                return;
+            }
+
+            const postLines = postDataText.split('\n').filter(line => line.trim() !== '');
+            postLines.forEach((line, index) => {
+                const postText = line.trim();
+                const postId = `tweet-${index}`;
+                
+                const postElement = document.createElement('div');
+                postElement.className = `tweet-container font-${selectedFont}`;
+                postElement.id = postId;
+
+                const headerElement = document.createElement('div');
+                headerElement.className = 'tweet-header';
+
+                const imageElement = document.createElement('img');
+                imageElement.src = profilePicDataUrl;
+                imageElement.alt = `Foto de perfil de ${username}`;
+                imageElement.className = 'tweet-profile-pic';
+                
+                const userInfoElement = document.createElement('div');
+                userInfoElement.className = 'tweet-name-group';
+                
+                const usernameElement = document.createElement('span');
+                usernameElement.className = `tweet-username font-${selectedFont}`;
+                usernameElement.textContent = username;
+                
+                const handleElement = document.createElement('span');
+                handleElement.className = 'tweet-handle';
+                handleElement.textContent = handle;
+                
+                const textElement = document.createElement('p');
+                textElement.className = `tweet-content font-${selectedFont}`;
+                textElement.textContent = postText;
+
+                const downloadBtn = document.createElement('button');
+                downloadBtn.textContent = 'Descargar como imagen';
+                downloadBtn.className = 'absolute top-2 right-2 bg-gray-200 text-gray-700 font-semibold text-sm px-2 py-1 rounded-full hover:bg-gray-300 transition-colors';
+                downloadBtn.addEventListener('click', () => {
+                    downloadTweet(postId, `post-${index + 1}.png`);
+                });
+                
+                userInfoElement.appendChild(usernameElement);
+                userInfoElement.appendChild(handleElement);
+                
+                headerElement.appendChild(imageElement);
+                headerElement.appendChild(userInfoElement);
+
+                postElement.appendChild(headerElement);
+                postElement.appendChild(textElement);
+                postElement.appendChild(downloadBtn);
+                
+                postsContainer.appendChild(postElement);
+            });
+
+            if (postLines.length > 0) {
+                document.getElementById('actionButtons').classList.remove('hidden');
+            }
+        });
+
+        async function downloadTweet(elementId, filename) {
+            const element = document.getElementById(elementId);
+            const originalStyle = element.style.cssText;
+            const downloadBtn = element.querySelector('button');
+            
+            const width = 600;
+            const padding = '2rem';
+            
+            if (downloadBtn) {
+                downloadBtn.style.opacity = '0';
+                downloadBtn.style.pointerEvents = 'none';
+            }
+            element.style.padding = padding;
+            element.style.width = `${width}px`;
+            element.style.boxSizing = 'content-box';
+            
+            const canvas = await html2canvas(element, { useCORS: true });
+            
+            element.style.cssText = originalStyle;
+            if (downloadBtn) {
+                downloadBtn.style.opacity = '';
+                downloadBtn.style.pointerEvents = '';
+            }
+            
+            const link = document.createElement('a');
+            link.href = canvas.toDataURL('image/png');
+            link.download = filename;
+            link.click();
+        }
+
+        document.getElementById('downloadAllBtn').addEventListener('click', async () => {
+            const posts = document.querySelectorAll('.tweet-container');
+            if (posts.length === 0) {
+                alert('No hay posts para descargar.');
+                return;
+            }
+
+            const zip = new JSZip();
+            const loadingModal = showLoadingModal();
+
+            try {
+                for (let i = 0; i < posts.length; i++) {
+                    const post = posts[i];
+                    const downloadBtn = post.querySelector('button');
+                    if (downloadBtn) {
+                        downloadBtn.style.opacity = '0';
+                        downloadBtn.style.pointerEvents = 'none';
+                    }
+                    const originalStyle = post.style.cssText;
+                    
+                    const width = 600;
+                    const padding = '2rem';
+                    post.style.padding = padding;
+                    post.style.width = `${width}px`;
+                    post.style.boxSizing = 'content-box';
+
+                    const canvas = await html2canvas(post, { useCORS: true });
+                    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                    zip.file(`post-${i + 1}.png`, blob);
+                    
+                    post.style.cssText = originalStyle;
+                    if (downloadBtn) {
+                        downloadBtn.style.opacity = '';
+                        downloadBtn.style.pointerEvents = '';
+                    }
+                }
+
+                zip.generateAsync({ type: 'blob' }).then(function(content) {
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(content);
+                    link.download = 'posts_en_lote.zip';
+                    link.click();
+                });
+            } catch (error) {
+                console.error("Error al generar el ZIP:", error);
+                alert("Ocurrió un error al descargar las publicaciones.");
+            } finally {
+                loadingModal.remove();
+            }
+        });
+
+        async function callGeminiAPI(prompt, systemPrompt, apiKey) {
+            const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=" + apiKey;
+            let response;
+            let retries = 0;
+            const maxRetries = 3;
+            while (retries < maxRetries) {
+                try {
+                    response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: prompt }] }],
+                            systemInstruction: { parts: [{ text: systemPrompt }] }
+                        })
+                    });
+                    if (response.ok) {
+                        break;
+                    } else if (response.status === 429) {
+                        const delay = Math.pow(2, retries) * 1000;
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        retries++;
+                    } else {
+                        throw new Error(`API error: ${response.statusText}`);
+                    }
+                } catch (error) {
+                    if (retries === maxRetries - 1) throw error;
+                    const delay = Math.pow(2, retries) * 1000;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    retries++;
+                }
+            }
+            if (!response.ok) {
+                throw new Error("Failed to fetch from API after multiple retries.");
+            }
+            const result = await response.json();
+            return result?.candidates?.[0]?.content?.parts?.[0]?.text || 'Error: No se pudo generar el texto.';
+        }
+        async function generatePost() {
+            const postDataTextarea = document.getElementById('postData');
+            const postType = document.getElementById('inputType').value.trim();
+            const apiKey = document.getElementById('apiKeyInput').value.trim();
+
+            if (!apiKey) {
+                alert('Por favor, introduce tu clave de API de Gemini para generar publicaciones.');
+                return;
+            }
+
+            const loadingModal = showLoadingModal("Generando 10 posts...");
+            const posts = [];
+
+            try {
+                const systemPrompt = "Eres un creador de contenido para redes sociales que crea publicaciones breves y atractivas. Proporciona solo el texto de la publicación, sin títulos, introducciones, conclusiones o hashtags. El texto debe estar listo para ser usado.";
+                for (let i = 0; i < 10; i++) {
+                    const prompt = `Genera un post de redes sociales conciso y en español sobre el siguiente tema: ${postType}.`;
+                    const newText = await callGeminiAPI(prompt, systemPrompt, apiKey);
+                    posts.push(newText);
+                }
+                postDataTextarea.value = posts.join('\n\n');
+            } catch (error) {
+                alert("Error al generar las publicaciones. Por favor, asegúrate de que tu clave de API sea válida e inténtalo de nuevo.");
+                console.error(error);
+            } finally {
+                loadingModal.remove();
+            }
+        }
+
+        document.getElementById('generateAIPostBtn').addEventListener('click', generatePost);
+
+
+        function showLoadingModal(message) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center';
+            modal.innerHTML = `
+                <div class="bg-white p-8 rounded-lg shadow-xl max-w-sm mx-auto flex flex-col items-center">
+                    <svg class="animate-spin -ml-1 mr-3 h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <p class="mt-4 text-center">${message}</p>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            return modal;
+        }
+
+        function alert(message) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center';
+            modal.innerHTML = `
+                <div class="bg-white p-8 rounded-lg shadow-xl max-w-sm mx-auto">
+                    <h2 class="text-xl font-bold mb-4">Aviso</h2>
+                    <p>${message}</p>
+                    <button class="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700" onclick="this.closest('.fixed').remove()">Cerrar</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+    </script>
+</body>
+</html>
