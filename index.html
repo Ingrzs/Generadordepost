@@ -16,7 +16,7 @@
             background-color: #f0f2f5;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
-        .tweet-container {
+        .post-container {
             background-color: white;
             border-radius: 1rem;
             border: 1px solid #e5e7eb;
@@ -24,47 +24,98 @@
             margin-bottom: 1rem;
             position: relative;
         }
-        .tweet-header {
+        .post-header {
             display: flex;
             align-items: center;
             margin-bottom: 0.5rem;
         }
-        .tweet-profile-pic {
+        .post-profile-pic {
             width: 48px;
             height: 48px;
             border-radius: 9999px;
             object-fit: cover;
             margin-right: 0.75rem;
         }
-        .tweet-username {
+        .post-username {
             font-weight: bold;
             color: #1a202c;
             margin-right: 0.25rem;
         }
-        .tweet-handle {
+        .post-handle {
             color: #6b7280;
             font-size: 0.875rem;
         }
-        .tweet-content {
+        .post-content {
             color: #1a202c;
             line-height: 1.5;
             font-size: 1.25rem;
             margin-top: 0.5rem;
         }
-        .tweet-time {
+        .post-time {
             color: #6b7280;
             font-size: 0.875rem;
             margin-left: auto;
         }
-        .tweet-name-group {
+        .post-name-group {
             display: flex;
             flex-direction: column;
         }
-        .tweet-name-group .tweet-username {
+        .post-name-group .post-username {
             line-height: 1;
         }
-        .tweet-name-group .tweet-handle {
+        .post-name-group .post-handle {
             line-height: 1;
+        }
+
+        /* Estilos para los posts de imagen (Actualizado) */
+        .meme-container {
+            position: relative;
+            background-color: white;
+            border-radius: 1rem;
+            border: 1px solid #e5e7eb;
+            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .meme-text-container {
+            padding: 1rem;
+            background-color: white;
+        }
+        .meme-text-content {
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-align: center;
+            color: #1a202c;
+        }
+        .meme-image-container {
+            position: relative;
+            width: 100%;
+            height: auto;
+            border-radius: 0 0 1rem 1rem;
+            overflow: hidden;
+        }
+        .meme-image {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        /* Estilos para la marca de agua */
+        .watermark {
+            position: absolute;
+            width: 50px;
+            height: auto;
+            opacity: 0.7;
+            pointer-events: none;
+            transition: all 0.3s ease-in-out;
+        }
+        .watermark-bottom-right {
+            bottom: 10px;
+            right: 10px;
+        }
+        .watermark-top-right {
+            top: 10px;
+            right: 10px;
         }
 
         /* Estilos de las fuentes dinámicas */
@@ -82,100 +133,231 @@
         .font-nunito { font-family: 'Nunito', sans-serif; }
         .font-rubik { font-family: 'Rubik', sans-serif; }
         .font-pacifico { font-family: 'Pacifico', cursive; }
+
+        .hidden { display: none; }
     </style>
 </head>
 <body class="p-8 bg-gray-100">
 
-    <div class="max-w-3xl mx-auto bg-white p-8 rounded-2xl shadow-lg">
-        <p class="text-center text-gray-600 mb-6">Completa los datos del usuario, sube una foto de perfil y pega el texto de tus publicaciones, uno por línea.</p>
-
-        <!-- Campo para la API Key -->
-        <div class="mb-6">
-            <label for="apiKeyInput" class="block text-sm font-medium text-gray-700 mb-1">Clave de API de Gemini</label>
-            <div class="relative">
-                <input type="password" id="apiKeyInput" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Introduce tu clave de API aquí">
-                <button id="toggleApiKeyBtn" class="absolute inset-y-0 right-0 px-3 py-1 bg-gray-200 text-gray-600 rounded-r-lg hover:bg-gray-300 transition-colors">Mostrar</button>
-            </div>
-        </div>
-
-        <!-- Campo para el tipo de contenido -->
-        <div class="mb-6">
-            <div class="flex justify-between items-center mb-2">
-                <label for="inputType" class="block text-sm font-medium text-gray-700">Tipo de contenido</label>
-                <div class="flex space-x-2">
-                    <button id="generateAIPostBtn" class="bg-blue-600 text-white font-semibold py-1 px-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center">
-                        <span class="mr-1">✨</span> Crear Post con IA
-                    </button>
-                </div>
-            </div>
-            <textarea id="inputType" rows="2" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ej: Citas motivacionales, humor de la vida diaria, datos curiosos, poesía..."></textarea>
-        </div>
-
-        <!-- Controles de entrada para el usuario y la foto -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div>
-                <label for="inputUsername" class="block text-sm font-medium text-gray-700 mb-1">Nombre de usuario</label>
-                <input type="text" id="inputUsername" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" value="usuario">
-            </div>
-            <div>
-                <label for="inputHandle" class="block text-sm font-medium text-gray-700 mb-1">Handle (@)</label>
-                <input type="text" id="inputHandle" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" value="@usuario">
-            </div>
-            <div>
-                <label for="inputProfilePic" class="block text-sm font-medium text-gray-700 mb-1">Subir foto de perfil</label>
-                <input type="file" id="inputProfilePic" accept="image/*" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-        </div>
+    <div class="max-w-6xl mx-auto bg-white p-8 rounded-2xl shadow-lg">
         
-        <div class="mb-6">
-            <label for="fontSelect" class="block text-sm font-medium text-gray-700 mb-1">Fuente</label>
-            <select id="fontSelect" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="roboto">Roboto</option>
-                <option value="opensans">Open Sans</option>
-                <option value="lato">Lato</option>
-                <option value="montserrat">Montserrat</option>
-                <option value="poppins">Poppins</option>
-                <option value="inter">Inter</option>
-                <option value="raleway">Raleway</option>
-                <option value="playfairdisplay">Playfair Display</option>
-                <option value="merriweather">Merriweather</option>
-                <option value="firasans">Fira Sans</option>
-                <option value="oswald">Oswald</option>
-                <option value="nunito">Nunito</option>
-                <option value="rubik">Rubik</option>
-                <option value="pacifico">Pacifico</option>
-            </select>
+        <!-- Pestañas de navegación -->
+        <div class="flex border-b border-gray-200 mb-6">
+            <button id="tabText" class="px-4 py-2 text-sm font-semibold text-blue-600 border-b-2 border-blue-600 focus:outline-none">Generador de Texto</button>
+            <button id="tabImage" class="px-4 py-2 text-sm font-semibold text-gray-500 border-b-2 border-transparent hover:border-gray-300 focus:outline-none">Generador de Imágenes</button>
         </div>
 
-        <div class="mb-6">
-            <div class="flex justify-between items-center mb-2">
-                <label for="postData" class="block text-sm font-medium text-gray-700">Textos de las publicaciones:</label>
-                <div class="flex space-x-2">
-                    <button id="clearAllBtn" class="bg-gray-200 text-gray-700 font-semibold py-1 px-3 rounded-lg hover:bg-gray-300 transition-colors">
-                        Limpiar Todo
-                    </button>
-                </div>
-            </div>
-            <textarea id="postData" rows="10" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ejemplo:
+        <!-- Contenido del Generador de Texto -->
+        <div id="textGenerator" class="tab-content">
+            <p class="text-center text-gray-600 mb-6">Completa los datos del usuario, sube una foto de perfil y pega el texto de tus publicaciones, uno por línea.</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Controles del generador de texto -->
+                <div>
+                    <!-- Campo para la API Key -->
+                    <div class="mb-6">
+                        <label for="apiKeyInput" class="block text-sm font-medium text-gray-700 mb-1">Clave de API de Gemini</label>
+                        <div class="relative">
+                            <input type="password" id="apiKeyInput" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Introduce tu clave de API aquí">
+                            <button id="toggleApiKeyBtn" class="absolute inset-y-0 right-0 px-3 py-1 bg-gray-200 text-gray-600 rounded-r-lg hover:bg-gray-300 transition-colors">Mostrar</button>
+                        </div>
+                    </div>
+
+                    <!-- Campo para el tipo de contenido -->
+                    <div class="mb-6">
+                        <div class="flex justify-between items-center mb-2">
+                            <label for="inputType" class="block text-sm font-medium text-gray-700">Tipo de contenido</label>
+                            <div class="flex space-x-2">
+                                <button id="generateAIPostBtn" class="bg-blue-600 text-white font-semibold py-1 px-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center">
+                                    <span class="mr-1">✨</span> Crear Post con IA
+                                </button>
+                            </div>
+                        </div>
+                        <textarea id="inputType" rows="2" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ej: Citas motivacionales, humor de la vida diaria, datos curiosos, poesía..."></textarea>
+                    </div>
+
+                    <!-- Controles de entrada para el usuario y la foto -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div>
+                            <label for="inputUsername" class="block text-sm font-medium text-gray-700 mb-1">Nombre de usuario</label>
+                            <input type="text" id="inputUsername" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" value="usuario">
+                        </div>
+                        <div>
+                            <label for="inputHandle" class="block text-sm font-medium text-gray-700 mb-1">Handle (@)</label>
+                            <input type="text" id="inputHandle" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" value="@usuario">
+                        </div>
+                        <div>
+                            <label for="inputProfilePic" class="block text-sm font-medium text-gray-700 mb-1">Subir foto de perfil</label>
+                            <input type="file" id="inputProfilePic" accept="image/*" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label for="fontSelect" class="block text-sm font-medium text-gray-700 mb-1">Fuente</label>
+                        <select id="fontSelect" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="roboto">Roboto</option>
+                            <option value="opensans">Open Sans</option>
+                            <option value="lato">Lato</option>
+                            <option value="montserrat">Montserrat</option>
+                            <option value="poppins">Poppins</option>
+                            <option value="inter">Inter</option>
+                            <option value="raleway">Raleway</option>
+                            <option value="playfairdisplay">Playfair Display</option>
+                            <option value="merriweather">Merriweather</option>
+                            <option value="firasans">Fira Sans</option>
+                            <option value="oswald">Oswald</option>
+                            <option value="nunito">Nunito</option>
+                            <option value="rubik">Rubik</option>
+                            <option value="pacifico">Pacifico</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-6">
+                        <div class="flex justify-between items-center mb-2">
+                            <label for="postData" class="block text-sm font-medium text-gray-700">Textos de las publicaciones:</label>
+                            <div class="flex space-x-2">
+                                <button id="clearAllBtn" class="bg-gray-200 text-gray-700 font-semibold py-1 px-3 rounded-lg hover:bg-gray-300 transition-colors">
+                                    Limpiar Todo
+                                </button>
+                            </div>
+                        </div>
+                        <textarea id="postData" rows="10" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ejemplo:
 ¡Me encantan las personas que se emocionan con un atardecer!
 Mi segundo post, ¡listo para ser publicado en lotes!"></textarea>
+                    </div>
+
+                    <div class="flex flex-col md:flex-row gap-4 mb-6">
+                        <button id="createPostsBtn" class="w-full md:w-1/2 bg-blue-600 text-white font-semibold py-3 px-6 rounded-xl hover:bg-blue-700 transition-colors">
+                            Generar Posts de Texto
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Vista previa del generador de texto -->
+                <div class="bg-gray-50 p-6 rounded-xl border border-gray-200 shadow-inner">
+                    <h3 class="text-lg font-semibold mb-4 text-center">Vista Previa</h3>
+                    <div id="previewText" class="post-container font-roboto">
+                        <div class="post-header">
+                            <img id="previewProfilePic" src="https://placehold.co/100x100/A31D80/ffffff?text=E" alt="Foto de perfil" class="post-profile-pic">
+                            <div class="post-name-group">
+                                <span id="previewUsername" class="post-username font-roboto">usuario</span>
+                                <span id="previewHandle" class="post-handle">@usuario</span>
+                            </div>
+                        </div>
+                        <p id="previewContent" class="post-content font-roboto">Esta es una vista previa de cómo se verá tu publicación.</p>
+                    </div>
+                </div>
+            </div>
+            <div id="actionButtonsText" class="flex flex-col md:flex-row gap-4 mb-6 hidden">
+                <button id="downloadAllTextBtn" class="w-full md:w-1/2 bg-green-600 text-white font-semibold py-3 px-6 rounded-xl hover:bg-green-700 transition-colors">
+                    Descargar Todos los Posts (.zip)
+                </button>
+            </div>
         </div>
 
-        <div class="flex flex-col md:flex-row gap-4 mb-6">
-            <button id="createPostsBtn" class="w-full md:w-1/2 bg-blue-600 text-white font-semibold py-3 px-6 rounded-xl hover:bg-blue-700 transition-colors">
-                Generar Posts de Imágenes
-            </button>
-        </div>
+        <!-- Contenido del Generador de Imágenes (Actualizado) -->
+        <div id="imageGenerator" class="tab-content hidden">
+            <p class="text-center text-gray-600 mb-6">Sube una imagen de fondo, una marca de agua (opcional) y pega los títulos, uno por línea.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Controles del generador de imágenes -->
+                <div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div>
+                            <label for="imageUpload" class="block text-sm font-medium text-gray-700 mb-1">Subir imagen de fondo</label>
+                            <input type="file" id="imageUpload" accept="image/*" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label for="watermarkUpload" class="block text-sm font-medium text-gray-700 mb-1">Subir marca de agua (opcional)</label>
+                            <input type="file" id="watermarkUpload" accept="image/*" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
 
-        <div id="actionButtons" class="flex flex-col md:flex-row gap-4 mb-6 hidden">
-            <button id="downloadAllBtn" class="w-full md:w-1/2 bg-green-600 text-white font-semibold py-3 px-6 rounded-xl hover:bg-green-700 transition-colors">
-                Descargar Todos los Posts (.zip)
-            </button>
+                    <div class="mb-6">
+                        <label for="watermarkOpacity" class="block text-sm font-medium text-gray-700 mb-1">Opacidad de la marca de agua: <span id="opacityValue">70%</span></label>
+                        <input type="range" id="watermarkOpacity" min="0" max="100" value="70" class="w-full">
+                    </div>
+                    
+                    <!-- Control de posición de la marca de agua -->
+                    <div class="mb-6">
+                        <label for="watermarkPosition" class="block text-sm font-medium text-gray-700 mb-1">Posición de la marca de agua</label>
+                        <select id="watermarkPosition" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="bottom-right">Abajo a la derecha</option>
+                            <option value="top-right">Arriba a la derecha</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-6">
+                        <label for="fontSelectImage" class="block text-sm font-medium text-gray-700 mb-1">Fuente</label>
+                        <select id="fontSelectImage" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="roboto">Roboto</option>
+                            <option value="opensans">Open Sans</option>
+                            <option value="lato">Lato</option>
+                            <option value="montserrat">Montserrat</option>
+                            <option value="poppins">Poppins</option>
+                            <option value="inter">Inter</option>
+                            <option value="raleway">Raleway</option>
+                            <option value="playfairdisplay">Playfair Display</option>
+                            <option value="merriweather">Merriweather</option>
+                            <option value="firasans">Fira Sans</option>
+                            <option value="oswald">Oswald</option>
+                            <option value="nunito">Nunito</option>
+                            <option value="rubik">Rubik</option>
+                            <option value="pacifico">Pacifico</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-6">
+                        <div class="flex justify-between items-center mb-2">
+                            <label for="imagePostData" class="block text-sm font-medium text-gray-700">Títulos de los memes:</label>
+                            <div class="flex space-x-2">
+                                <button id="clearAllImageBtn" class="bg-gray-200 text-gray-700 font-semibold py-1 px-3 rounded-lg hover:bg-gray-300 transition-colors">
+                                    Limpiar Todo
+                                </button>
+                            </div>
+                        </div>
+                        <textarea id="imagePostData" rows="10" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ejemplo:
+Yo cuando es viernes
+Es un gran día para aprender a programar"></textarea>
+                    </div>
+                    
+                    <div class="flex flex-col md:flex-row gap-4 mb-6">
+                        <button id="createMemesBtn" class="w-full md:w-1/2 bg-blue-600 text-white font-semibold py-3 px-6 rounded-xl hover:bg-blue-700 transition-colors">
+                            Generar Memes
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Vista previa del generador de imágenes -->
+                <div class="bg-gray-50 p-6 rounded-xl border border-gray-200 shadow-inner">
+                    <h3 class="text-lg font-semibold mb-4 text-center">Vista Previa</h3>
+                    <div id="previewImage" class="meme-container">
+                        <div class="meme-text-container">
+                            <p id="previewImageText" class="meme-text-content font-roboto">Esta es una vista previa de tu meme.</p>
+                        </div>
+                        <div class="meme-image-container">
+                            <img id="previewImageBg" src="https://placehold.co/600x400/1E293B/ffffff?text=Tu+Imagen+Aqui" alt="Fondo" class="meme-image">
+                            <img id="previewWatermark" class="watermark watermark-bottom-right" src="https://placehold.co/50x50/A31D80/ffffff?text=Logo">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="actionButtonsImage" class="flex flex-col md:flex-row gap-4 mb-6 hidden">
+                <button id="downloadAllImageBtn" class="w-full md:w-1/2 bg-green-600 text-white font-semibold py-3 px-6 rounded-xl hover:bg-green-700 transition-colors">
+                    Descargar Todos los Memes (.zip)
+                </button>
+            </div>
         </div>
     </div>
 
-    <div id="postsContainer" class="max-w-3xl mx-auto mt-8 space-y-6">
-        <!-- Las publicaciones generadas se añadirán aquí -->
+    <!-- Contenedor de posts de texto -->
+    <div id="postsContainerText" class="max-w-3xl mx-auto mt-8 space-y-6">
+        <!-- Las publicaciones de texto generadas se añadirán aquí -->
+    </div>
+
+    <!-- Contenedor de posts de imagen -->
+    <div id="postsContainerImage" class="max-w-3xl mx-auto mt-8 space-y-6">
+        <!-- Los memes generados se añadirán aquí -->
     </div>
 
     <script>
@@ -183,19 +365,53 @@ Mi segundo post, ¡listo para ser publicado en lotes!"></textarea>
         const profilePicInput = document.getElementById('inputProfilePic');
         let profilePicDataUrl = 'https://placehold.co/100x100/A31D80/ffffff?text=E'; // Imagen por defecto
 
-        profilePicInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    profilePicDataUrl = event.target.result;
-                };
-                reader.readAsDataURL(file);
+        // --- Lógica de pestañas ---
+        const tabText = document.getElementById('tabText');
+        const tabImage = document.getElementById('tabImage');
+        const textGenerator = document.getElementById('textGenerator');
+        const imageGenerator = document.getElementById('imageGenerator');
+        const postsContainerText = document.getElementById('postsContainerText');
+        const postsContainerImage = document.getElementById('postsContainerImage');
+
+        function switchTab(tabId) {
+            tabText.classList.remove('border-blue-600', 'text-blue-600');
+            tabText.classList.add('border-transparent', 'text-gray-500');
+            tabImage.classList.remove('border-blue-600', 'text-blue-600');
+            tabImage.classList.add('border-transparent', 'text-gray-500');
+
+            textGenerator.classList.add('hidden');
+            imageGenerator.classList.add('hidden');
+            postsContainerText.classList.add('hidden');
+            postsContainerImage.classList.add('hidden');
+
+            if (tabId === 'text') {
+                tabText.classList.add('border-blue-600', 'text-blue-600');
+                textGenerator.classList.remove('hidden');
+                postsContainerText.classList.remove('hidden');
+            } else {
+                tabImage.classList.add('border-blue-600', 'text-blue-600');
+                imageGenerator.classList.remove('hidden');
+                postsContainerImage.classList.remove('hidden');
             }
-        });
+        }
+
+        tabText.addEventListener('click', () => switchTab('text'));
+        tabImage.addEventListener('click', () => switchTab('image'));
+
+        // Inicia con la primera pestaña activa
+        switchTab('text');
         
+        // --- Lógica de Generador de Texto (existente y actualizada para la vista previa) ---
         const apiKeyInput = document.getElementById('apiKeyInput');
         const toggleApiKeyBtn = document.getElementById('toggleApiKeyBtn');
+        const inputUsername = document.getElementById('inputUsername');
+        const inputHandle = document.getElementById('inputHandle');
+        const fontSelect = document.getElementById('fontSelect');
+        const previewProfilePic = document.getElementById('previewProfilePic');
+        const previewUsername = document.getElementById('previewUsername');
+        const previewHandle = document.getElementById('previewHandle');
+        const previewContent = document.getElementById('previewContent');
+
         toggleApiKeyBtn.addEventListener('click', () => {
             const type = apiKeyInput.type === 'password' ? 'text' : 'password';
             apiKeyInput.type = type;
@@ -204,19 +420,18 @@ Mi segundo post, ¡listo para ser publicado en lotes!"></textarea>
 
         document.getElementById('clearAllBtn').addEventListener('click', () => {
             document.getElementById('postData').value = '';
-            document.getElementById('postsContainer').innerHTML = '';
-            document.getElementById('actionButtons').classList.add('hidden');
+            postsContainerText.innerHTML = '';
+            document.getElementById('actionButtonsText').classList.add('hidden');
         });
 
         document.getElementById('createPostsBtn').addEventListener('click', () => {
             const postDataText = document.getElementById('postData').value.trim();
-            const postsContainer = document.getElementById('postsContainer');
-            postsContainer.innerHTML = '';
-            document.getElementById('actionButtons').classList.add('hidden');
+            postsContainerText.innerHTML = '';
+            document.getElementById('actionButtonsText').classList.add('hidden');
 
-            const username = document.getElementById('inputUsername').value.trim();
-            const handle = document.getElementById('inputHandle').value.trim();
-            const selectedFont = document.getElementById('fontSelect').value;
+            const username = inputUsername.value.trim();
+            const handle = inputHandle.value.trim();
+            const selectedFont = fontSelect.value;
 
             if (!postDataText || !username || !handle) {
                 alert('Por favor, rellena todos los campos.');
@@ -226,40 +441,40 @@ Mi segundo post, ¡listo para ser publicado en lotes!"></textarea>
             const postLines = postDataText.split('\n').filter(line => line.trim() !== '');
             postLines.forEach((line, index) => {
                 const postText = line.trim();
-                const postId = `tweet-${index}`;
+                const postId = `text-tweet-${index}`;
                 
                 const postElement = document.createElement('div');
-                postElement.className = `tweet-container font-${selectedFont}`;
+                postElement.className = `post-container font-${selectedFont}`;
                 postElement.id = postId;
 
                 const headerElement = document.createElement('div');
-                headerElement.className = 'tweet-header';
+                headerElement.className = 'post-header';
 
                 const imageElement = document.createElement('img');
                 imageElement.src = profilePicDataUrl;
                 imageElement.alt = `Foto de perfil de ${username}`;
-                imageElement.className = 'tweet-profile-pic';
+                imageElement.className = 'post-profile-pic';
                 
                 const userInfoElement = document.createElement('div');
-                userInfoElement.className = 'tweet-name-group';
+                userInfoElement.className = 'post-name-group';
                 
                 const usernameElement = document.createElement('span');
-                usernameElement.className = `tweet-username font-${selectedFont}`;
+                usernameElement.className = `post-username font-${selectedFont}`;
                 usernameElement.textContent = username;
                 
                 const handleElement = document.createElement('span');
-                handleElement.className = 'tweet-handle';
+                handleElement.className = 'post-handle';
                 handleElement.textContent = handle;
                 
                 const textElement = document.createElement('p');
-                textElement.className = `tweet-content font-${selectedFont}`;
+                textElement.className = `post-content font-${selectedFont}`;
                 textElement.textContent = postText;
 
                 const downloadBtn = document.createElement('button');
                 downloadBtn.textContent = 'Descargar como imagen';
                 downloadBtn.className = 'absolute top-2 right-2 bg-gray-200 text-gray-700 font-semibold text-sm px-2 py-1 rounded-full hover:bg-gray-300 transition-colors';
                 downloadBtn.addEventListener('click', () => {
-                    downloadTweet(postId, `post-${index + 1}.png`);
+                    downloadPost(postId, `post-texto-${index + 1}.png`);
                 });
                 
                 userInfoElement.appendChild(usernameElement);
@@ -272,15 +487,214 @@ Mi segundo post, ¡listo para ser publicado en lotes!"></textarea>
                 postElement.appendChild(textElement);
                 postElement.appendChild(downloadBtn);
                 
-                postsContainer.appendChild(postElement);
+                postsContainerText.appendChild(postElement);
             });
 
             if (postLines.length > 0) {
-                document.getElementById('actionButtons').classList.remove('hidden');
+                document.getElementById('actionButtonsText').classList.remove('hidden');
             }
         });
 
-        async function downloadTweet(elementId, filename) {
+        // Event listener para actualizar la fuente en tiempo real
+        fontSelect.addEventListener('change', (e) => {
+            const selectedFont = e.target.value;
+            const previewText = document.getElementById('previewText');
+            
+            previewText.className = `post-container font-${selectedFont}`;
+            previewUsername.className = `post-username font-${selectedFont}`;
+            previewContent.className = `post-content font-${selectedFont}`;
+
+            const posts = document.querySelectorAll('#postsContainerText .post-container');
+            posts.forEach(post => {
+                post.className = `post-container font-${selectedFont}`;
+                post.querySelector('.post-username').className = `post-username font-${selectedFont}`;
+                post.querySelector('.post-content').className = `post-content font-${selectedFont}`;
+            });
+        });
+
+        inputUsername.addEventListener('input', () => {
+            previewUsername.textContent = inputUsername.value;
+        });
+
+        inputHandle.addEventListener('input', () => {
+            previewHandle.textContent = inputHandle.value;
+        });
+        
+        profilePicInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    profilePicDataUrl = event.target.result;
+                    previewProfilePic.src = profilePicDataUrl;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        document.getElementById('downloadAllTextBtn').addEventListener('click', async () => {
+            const posts = document.querySelectorAll('#postsContainerText .post-container');
+            await downloadAllPosts(posts, 'posts-texto');
+        });
+
+        // --- Lógica de Generador de Imágenes (nueva y actualizada) ---
+        const imageUploadInput = document.getElementById('imageUpload');
+        const watermarkUploadInput = document.getElementById('watermarkUpload');
+        const watermarkOpacityInput = document.getElementById('watermarkOpacity');
+        const watermarkPositionSelect = document.getElementById('watermarkPosition');
+        const fontSelectImage = document.getElementById('fontSelectImage');
+        const opacityValue = document.getElementById('opacityValue');
+        const previewImageBg = document.getElementById('previewImageBg');
+        const previewWatermark = document.getElementById('previewWatermark');
+        const previewImageText = document.getElementById('previewImageText');
+        const imagePostData = document.getElementById('imagePostData');
+        
+        let uploadedImageURL = '';
+        let watermarkImageURL = '';
+        const defaultImageURL = "https://placehold.co/600x400/1E293B/ffffff?text=Tu+Imagen+Aqui";
+        const defaultWatermarkURL = "https://placehold.co/50x50/A31D80/ffffff?text=Logo";
+
+
+        imageUploadInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    uploadedImageURL = event.target.result;
+                    previewImageBg.src = uploadedImageURL;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        watermarkUploadInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    watermarkImageURL = event.target.result;
+                    previewWatermark.src = watermarkImageURL;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        watermarkOpacityInput.addEventListener('input', () => {
+            opacityValue.textContent = `${watermarkOpacityInput.value}%`;
+            previewWatermark.style.opacity = watermarkOpacityInput.value / 100;
+        });
+        
+        watermarkPositionSelect.addEventListener('change', () => {
+            previewWatermark.className = `watermark watermark-${watermarkPositionSelect.value}`;
+        });
+
+        fontSelectImage.addEventListener('change', () => {
+            previewImageText.className = `meme-text-content font-${fontSelectImage.value}`;
+        });
+        
+        imagePostData.addEventListener('input', () => {
+            const firstLine = imagePostData.value.split('\n')[0] || "Esta es una vista previa de tu meme.";
+            previewImageText.textContent = firstLine;
+        });
+
+        document.getElementById('clearAllImageBtn').addEventListener('click', () => {
+            document.getElementById('imagePostData').value = '';
+            postsContainerImage.innerHTML = '';
+            document.getElementById('actionButtonsImage').classList.add('hidden');
+            
+            // Restablecer la vista previa
+            previewImageBg.src = defaultImageURL;
+            uploadedImageURL = '';
+            previewWatermark.src = defaultWatermarkURL;
+            watermarkImageURL = '';
+            previewImageText.textContent = 'Esta es una vista previa de tu meme.';
+            watermarkOpacityInput.value = 70;
+            opacityValue.textContent = '70%';
+            previewWatermark.style.opacity = 0.7;
+            previewWatermark.className = 'watermark watermark-bottom-right';
+            imageUploadInput.value = '';
+            watermarkUploadInput.value = '';
+            watermarkPositionSelect.value = 'bottom-right';
+            fontSelectImage.value = 'roboto';
+            previewImageText.className = 'meme-text-content font-roboto';
+        });
+
+        document.getElementById('createMemesBtn').addEventListener('click', () => {
+            const imagePostDataText = document.getElementById('imagePostData').value.trim();
+            postsContainerImage.innerHTML = '';
+            document.getElementById('actionButtonsImage').classList.add('hidden');
+
+            if (!uploadedImageURL || !imagePostDataText) {
+                alert('Por favor, sube una imagen de fondo y pega al menos un texto.');
+                return;
+            }
+
+            const postLines = imagePostDataText.split('\n').filter(line => line.trim() !== '');
+            postLines.forEach((line, index) => {
+                const memeText = line.trim();
+                const memeId = `meme-${index}`;
+                
+                const selectedFont = fontSelectImage.value;
+                const selectedWatermarkPosition = watermarkPositionSelect.value;
+
+                const memeElement = document.createElement('div');
+                memeElement.className = 'meme-container';
+                memeElement.id = memeId;
+
+                const textContainer = document.createElement('div');
+                textContainer.className = 'meme-text-container';
+                
+                const textOverlay = document.createElement('p');
+                textOverlay.className = `meme-text-content font-${selectedFont}`;
+                textOverlay.textContent = memeText;
+
+                textContainer.appendChild(textOverlay);
+
+                const imageContainer = document.createElement('div');
+                imageContainer.className = 'meme-image-container';
+
+                const imageElement = document.createElement('img');
+                imageElement.src = uploadedImageURL;
+                imageElement.alt = 'Imagen de fondo';
+                imageElement.className = 'meme-image';
+
+                imageContainer.appendChild(imageElement);
+
+                if (watermarkImageURL) {
+                    const watermark = document.createElement('img');
+                    watermark.src = watermarkImageURL;
+                    watermark.alt = 'Marca de agua';
+                    watermark.className = `watermark watermark-${selectedWatermarkPosition}`;
+                    watermark.style.opacity = watermarkOpacityInput.value / 100;
+                    imageContainer.appendChild(watermark);
+                }
+                
+                const downloadBtn = document.createElement('button');
+                downloadBtn.textContent = 'Descargar meme';
+                downloadBtn.className = 'absolute bottom-2 right-2 bg-gray-200 text-gray-700 font-semibold text-sm px-2 py-1 rounded-full hover:bg-gray-300 transition-colors';
+                downloadBtn.addEventListener('click', () => {
+                    downloadPost(memeId, `meme-${index + 1}.png`);
+                });
+
+                memeElement.appendChild(textContainer);
+                memeElement.appendChild(imageContainer);
+                memeElement.appendChild(downloadBtn);
+                
+                postsContainerImage.appendChild(memeElement);
+            });
+
+            if (postLines.length > 0) {
+                document.getElementById('actionButtonsImage').classList.remove('hidden');
+            }
+        });
+        
+        document.getElementById('downloadAllImageBtn').addEventListener('click', async () => {
+            const memes = document.querySelectorAll('#postsContainerImage .meme-container');
+            await downloadAllPosts(memes, 'memes');
+        });
+
+        // --- Funciones comunes de descarga ---
+        async function downloadPost(elementId, filename) {
             const element = document.getElementById(elementId);
             const originalStyle = element.style.cssText;
             const downloadBtn = element.querySelector('button');
@@ -310,15 +724,14 @@ Mi segundo post, ¡listo para ser publicado en lotes!"></textarea>
             link.click();
         }
 
-        document.getElementById('downloadAllBtn').addEventListener('click', async () => {
-            const posts = document.querySelectorAll('.tweet-container');
+        async function downloadAllPosts(posts, zipName) {
             if (posts.length === 0) {
                 alert('No hay posts para descargar.');
                 return;
             }
 
             const zip = new JSZip();
-            const loadingModal = showLoadingModal();
+            const loadingModal = showLoadingModal("Generando el archivo .zip...");
 
             try {
                 for (let i = 0; i < posts.length; i++) {
@@ -338,7 +751,7 @@ Mi segundo post, ¡listo para ser publicado en lotes!"></textarea>
 
                     const canvas = await html2canvas(post, { useCORS: true });
                     const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-                    zip.file(`post-${i + 1}.png`, blob);
+                    zip.file(`${zipName}-${i + 1}.png`, blob);
                     
                     post.style.cssText = originalStyle;
                     if (downloadBtn) {
@@ -350,7 +763,7 @@ Mi segundo post, ¡listo para ser publicado en lotes!"></textarea>
                 zip.generateAsync({ type: 'blob' }).then(function(content) {
                     const link = document.createElement('a');
                     link.href = URL.createObjectURL(content);
-                    link.download = 'posts_en_lote.zip';
+                    link.download = `${zipName}_en_lote.zip`;
                     link.click();
                 });
             } catch (error) {
@@ -359,8 +772,9 @@ Mi segundo post, ¡listo para ser publicado en lotes!"></textarea>
             } finally {
                 loadingModal.remove();
             }
-        });
-
+        }
+        
+        // --- Lógica de IA (existente) ---
         async function callGeminiAPI(prompt, systemPrompt, apiKey) {
             const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=" + apiKey;
             let response;
